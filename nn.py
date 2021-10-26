@@ -2,13 +2,12 @@ import pygame, random, json, neat, os, pickle, math
 from pygame.time import Clock
 
 class Snake:
-    def __init__(self, window):
+    def __init__(self):
         self.size = 10
         self.score = 0
         self.direction = 'right'
         self.x = 200
         self.y = 200
-        self.window = window
         self.rects = [pygame.Rect(self.x - i*10, self.y, 10, 10) for i in range(self.size)]
 
 
@@ -52,7 +51,7 @@ class Snake:
             if block.x == self.x and block.y == self.y:
                 hit_tail = True
         if hit_tail or hit_wall:
-            self.__init__(self.window)
+            self.__init__()
             return True
         return False
     
@@ -98,7 +97,7 @@ def draw_window(window, snake:Snake, gen_num):
     rect.y = 100
     window.blit(patch_text, rect)
 
-def create_food(window, snake):
+def create_food(snake):
     found = False
     while not found:
         xnums = [i for i in range(20, 400, 10)]
@@ -250,30 +249,22 @@ def get_inputs(snake:Snake, food):
 
 def main(genomes, config):
     WIDTH, HEIGHT = 700, 450
-    window = pygame.display.set_mode((WIDTH, HEIGHT))
+    # window = pygame.display.set_mode((WIDTH, HEIGHT))
 
 
 
     for i, gen in genomes:
         gen.fitness = 0
         net:neat.nn.FeedForwardNetwork = neat.nn.FeedForwardNetwork.create(gen, config)
-        snake = Snake(window)
-        food = create_food(window, snake)
-        # clock = Clock()
-        pygame.font.init()
+        snake = Snake()
+        food = create_food(snake)
         run = True
         times = 0
         score = 0
         latest_dist = math.sqrt((snake.x - food.x)**2 + (snake.y - food.y)**2)
         while run:
             times += 1
-            # clock.tick(1000)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    with open('data.json', 'w') as f:
-                        f.write(json.dumps(data))
-                    pygame.quit()
-                    return
+            
             
             inputs = get_inputs(snake, food)
             outputs = net.activate(inputs)
@@ -304,7 +295,7 @@ def main(genomes, config):
                 gen.fitness += 100
                 latest_dist = 9999
                 snake.eat()
-                food = create_food(window, snake)
+                food = create_food(snake)
 
             # gen.fitness += 0.01
             dist = inputs[20]
@@ -317,7 +308,6 @@ def main(genomes, config):
             if times > 5000 or snake.check_lose():
                 if times > 5000:
                     gen.fitness = 0
-                    print('avoided a loop')
                 run = False
             else:
                 score = snake.score
@@ -326,10 +316,6 @@ def main(genomes, config):
                 
                 snake.move()
 
-            draw_window(window, snake, i)
-
-            pygame.draw.rect(window, (255, 0, 0), food)
-            pygame.display.update()
         print(score)
         
         with open('data2.json', 'w') as f:
