@@ -1,0 +1,10 @@
+looks directions 
+    8 for the closest wall:done
+    8 for the closest tail
+fruit
+    4 for the direction:done
+    1 for the distance:done
+its own direction
+    4 as one for each direction:done
+the size
+    1 input:done
